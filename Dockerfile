@@ -1,21 +1,21 @@
 FROM php:8.1-apache
-WORKDIR /var/www/html
 
-COPY site_httpd.conf /etc/apache2/sites-available/site_httpd.conf
+COPY docker/entrypoint.sh /entrypoint.sh
+COPY app /var/www
 
-#COPY localhost+1.pem /etc/apache2/ssl/localhost+1.pem
-#COPY localhost+1-key.pem /etc/apache2/ssl/localhost+1-key.pem
+RUN apt-get update \
+    && apt-get install -y apt-transport-https gnupg \
+    && curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash \
+    && apt-get install -y symfony-cli \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    && apt-get purge -y --auto-remove -o APT:::AutoRemove::RecommendsImportant=false
 
-ADD certs /etc/apache2/ssl/
-ADD html /var/www/html/
+RUN symfony check:requirements
 
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf &&\
-    a2enmod rewrite &&\
-    a2enmod ssl &&\
-    a2dissite 000-default &&\
-    a2ensite site_httpd &&\
-    service apache2 restart
+WORKDIR /var/www
+RUN composer install -n \
+    && rm -rf /root/.composer
 
-
-COPY index.php index.php
 EXPOSE 443
+CMD ["symfony", "server:start", "--port=443", "--p12=/opt/ssl/certs/moodlenet.p12"]
+ENTRYPOINT ["/entrypoint.sh"]
