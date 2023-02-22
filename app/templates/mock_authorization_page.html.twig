@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Mock OAuth 2 /authorize endpoint</title>
+        <script>
+            window.onload = function() {
+                document.getElementById('buttons').addEventListener('click', e => {
+                    if (e.target.nodeName !== "BUTTON") {
+                        return;
+                    }
+                    const action = e.target.value;
+                    if (action === "confirm") {
+                        window.location.href = "{{ confirmRedirectUri|raw }}";
+                    } else {
+                        window.location.href = "{{ cancelRedirectUri|raw }}";
+                    }
+                });
+            }
+        </script>
+        <style>
+            .container {
+                display: flex;
+                justify-content:center;
+            }
+            .inner {
+                background: rgb(230, 230, 255);
+                padding: 30px;
+                border: solid 1px grey;
+                color: rgb(60,60,60);
+                border-radius:20px;
+            }
+            #buttons > button {
+                padding: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="inner">
+                <p>An app (client_id = {{ clientId }}) is requesting access for the following scopes:</p>
+                <ul>
+                    {% for scope in scopesRequested %}
+                        <li>{{ scope }}</li>
+                    {% endfor %}
+                </ul>
+                <div id="buttons">
+                    <button value="cancel">Cancel</button>
+                    <button value="confirm">Allow</button>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

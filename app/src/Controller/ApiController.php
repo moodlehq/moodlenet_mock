@@ -51,12 +51,64 @@ class ApiController extends AbstractController
         }
 
         $clientinfo = [
-            "client_id" => "s6BhdRkqt3",
-            "client_secret" => "cf136dc3c1fc93f31185e5885805d",
+            "client_id" => $this->getParameter('app.mock_oauth2_client_id'),
+            "client_secret" => $this->getParameter('app.mock_oauth2_client_secret'),
             "client_id_issued_at" => time(),
             "client_secret_expires_at" => 0,
         ];
 
         return $this->json(array_merge($requestdata, $clientinfo), 201);
+    }
+
+    #[Route('/oauth2/authorize')]
+    public function getAuthCode(Request $request): Response
+    {
+        $clientId = $request->get('client_id');
+        $badClient = $clientId !== $this->getParameter('app.mock_oauth2_client_id');
+        $redirectUri = $request->get('redirect_uri');
+        $responseType = $request->get('response_type');
+        $state = $request->get('state');
+        if ($responseType !== 'code' || empty($clientId) || empty('redirect_uri') || $badClient) {
+            $return = ['error' => 'invalid_request'];
+            if (!empty($state)) {
+                $return['state'] = $state;
+            }
+            return $this->json($return);
+        }
+
+        $state = urlencode($state);
+        $authcode = urlencode($this->getParameter('app.mock_oauth2_authcode'));
+        $scopesRequested = explode(' ', rtrim(trim($request->get('scope'))));
+        $confirmRedirectUri = "$redirectUri?code=$authcode&state=$state";
+        $description = urlencode("The user has denied access to the scope requested by the client application");
+        $cancelRedirectUri = "$redirectUri?error=access_denied&state=$state&error_description=$description";
+
+        return $this->render('mock_authorization_page.html.twig', [
+            'scopesRequested' => $scopesRequested,
+            'confirmRedirectUri' => $confirmRedirectUri,
+            'cancelRedirectUri' => $cancelRedirectUri,
+            'clientId' => $clientId
+        ]);
+    }
+
+    #[Route('/oauth2/token')]
+    public function getToken(Request $request) :Response {
+        $grantType = $request->get('grant_type');
+        $code = $request->get('code');
+        $redirectUri = $request->get('redirect_uri'); // Not validated since the app isn't stateful.
+        $clientId = $request->get('client_id');
+        $expectedClientId = $this->getParameter('app.mock_oauth2_client_id');
+        $expectedAuthCode = $this->getParameter('app.mock_oauth2_authcode');
+        if ($grantType !== 'authorization_code' || $code !== $expectedAuthCode || $clientId !== $expectedClientId) {
+            return $this->json(['error' => 'invalid_request']);
+        }
+
+        // Scope is omitted since this app isn't stateful. It's optional anyway, so no problem there.
+        return $this->json([
+            'access_token' => $this->getParameter('app.mock_oauth2_access_token'),
+            'token_type' => 'bearer',
+            'expires_in' => 3600,
+            'refresh_token' => $this->getParameter('app.mock_oauth2_refresh_token'),
+        ]);
     }
 }
