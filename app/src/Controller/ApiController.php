@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -110,5 +111,37 @@ class ApiController extends AbstractController
             'expires_in' => 3600,
             'refresh_token' => $this->getParameter('app.mock_oauth2_refresh_token'),
         ]);
+    }
+
+    #[Route('/.pkg/@moodlenet/ed-resource/basic/v1/create')]
+    public function createResource(Request $request) :Response {
+        $authHeader = $request->headers->get('authorization');
+        $accessToken = $authHeader ? explode(' ', $authHeader)[1] : null;
+
+        if ($accessToken !== $this->getParameter('app.mock_oauth2_access_token')) {
+            return new Response("Unauthorised. Bearer token missing or invalid.", 401);
+        }
+
+        //Note: PHP converts '.' to '_'. See https://www.php.net/manual/en/language.variables.external.php.
+        $resourceMetadata = json_decode($request->get('_'));
+        if (is_null($resourceMetadata)) {
+            return new Response("Missing JSON metadata", 400);
+        }
+
+        $uploadedFile = $request->files->get('_resource');
+        if (is_null($uploadedFile)) {
+            // File is missing, error.
+            return new Response("Missing file data", 400);
+        }
+        /** @var UploadedFile $uploadedFile */
+        $fileName = $uploadedFile->getClientOriginalName();
+
+        return $this->json([
+            '_key' => '1bf55cd85a',
+            'name' => $resourceMetadata->name,
+            'description' => $resourceMetadata->description,
+            'url' => 'https://moodlenet.test/files/'.$fileName,
+            'homepage' => 'https://moodlenet.test/files/home/'.$fileName,
+        ], 201);
     }
 }
