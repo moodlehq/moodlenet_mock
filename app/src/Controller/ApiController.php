@@ -95,13 +95,20 @@ class ApiController extends AbstractController
     #[Route('/oauth2/token')]
     public function getToken(Request $request) :Response {
         $grantType = $request->get('grant_type');
-        $code = $request->get('code');
-        $redirectUri = $request->get('redirect_uri'); // Not validated since the app isn't stateful.
-        $clientId = $request->get('client_id');
-        $expectedClientId = $this->getParameter('app.mock_oauth2_client_id');
-        $expectedAuthCode = $this->getParameter('app.mock_oauth2_authcode');
-        if ($grantType !== 'authorization_code' || $code !== $expectedAuthCode || $clientId !== $expectedClientId) {
-            return $this->json(['error' => 'invalid_request']);
+        if ($grantType == 'refresh_token') {
+            $refreshToken = $request->get('refresh_token');
+            if (empty($refreshToken) || $refreshToken != $this->getParameter('app.mock_oauth2_refresh_token')) {
+                return $this->json(['error' => 'invalid_request']);
+            }
+        } else if ($grantType == 'authorization_code') {
+            $code = $request->get('code');
+            $redirectUri = $request->get('redirect_uri'); // Not validated since the app isn't stateful.
+            $clientId = $request->get('client_id');
+            $expectedClientId = $this->getParameter('app.mock_oauth2_client_id');
+            $expectedAuthCode = $this->getParameter('app.mock_oauth2_authcode');
+            if ($code !== $expectedAuthCode || $clientId !== $expectedClientId) {
+                return $this->json(['error' => 'invalid_request']);
+            }
         }
 
         // Scope is omitted since this app isn't stateful. It's optional anyway, so no problem there.
