@@ -11,20 +11,21 @@ use Symfony\Component\Routing\Annotation\Route;
 class ApiController extends AbstractController
 {
     #[Route('/.well-known/oauth-authorization-server')]
-    public function authServerMetadata(): Response
+    public function authServerMetadata(Request $request): Response
     {
+        $serverName = $request->server->get('SERVER_NAME');
         return $this->json([
-            "issuer" => "https://moodlenet.test",
-            "authorization_endpoint" => "https://moodlenet.test/oauth2/authorize",
-            "token_endpoint" => "https://moodlenet.test/oauth2/token",
+            "issuer" => "https://$serverName",
+            "authorization_endpoint" => "https://$serverName/oauth2/authorize",
+            "token_endpoint" => "https://$serverName/oauth2/token",
             "token_endpoint_auth_methods_supported" => ["client_secret_basic", "private_key_jwt"],
             "token_endpoint_auth_signing_alg_values_supported" => ["RS256", "ES256"],
-            "userinfo_endpoint" => "https://moodlenet.test/oauth2/userinfo",
-            "jwks_uri" => "https://moodlenet.test/oauth2/jwks",
-            "registration_endpoint" => "https://moodlenet.test/oauth2/register",
+            "userinfo_endpoint" => "https://$serverName/oauth2/userinfo",
+            "jwks_uri" => "https://$serverName/oauth2/jwks",
+            "registration_endpoint" => "https://$serverName/oauth2/register",
             "scopes_supported" => ["email", "offline_access"],
             "response_types_supported" => ["code", "code token"],
-            "service_documentation" => "https://moodlenet.test/oauth2/service_docs",
+            "service_documentation" => "https://$serverName/oauth2/service_docs",
             "ui_locales_supported" => ["en-US", "en-GB", "en-CA"]
         ]);
     }
@@ -122,6 +123,7 @@ class ApiController extends AbstractController
 
     #[Route('/.pkg/@moodlenet/ed-resource/basic/v1/create')]
     public function createResource(Request $request) :Response {
+        $serverName = $request->server->get('SERVER_NAME');
         $authHeader = $request->headers->get('authorization');
         $accessToken = $authHeader ? explode(' ', $authHeader)[1] : null;
 
@@ -147,8 +149,8 @@ class ApiController extends AbstractController
             '_key' => '1bf55cd85a',
             'name' => $resourceMetadata->name,
             'description' => $resourceMetadata->description,
-            'url' => 'https://moodlenet.test/files/'.$fileName,
-            'homepage' => 'https://moodlenet.test/files/home/'.$fileName,
+            'url' => "https://$serverName/files/$fileName",
+            'homepage' => "https://$serverName/files/home/$fileName",
         ], 201);
     }
 }
