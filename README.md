@@ -15,7 +15,7 @@ Certs must be generated outside the container and made accessible to the running
     ```
 4. Run the container (this command is output at the end of the build process)
     ```
-    docker run -di -p 443:443 "$(pwd)/certs":/opt/ssl/certs moodlenet-mock
+    docker run -di -p 443:443 -v "$(pwd)/certs":/opt/ssl/certs moodlenet-mock
     ```
 5. Access the mock server at https://moodlenet.test
 
