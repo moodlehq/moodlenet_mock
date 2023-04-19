@@ -12,6 +12,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 class WellKnownController extends AbstractController
 {
     #[Route('/oauth-authorization-server/{serverID}', name: 'wellknown_oauth2_authorization_server_serverid')]
+    /**
+     * Return oauth-authorisation-server metadata per RFC8414.
+     */
     public function authServerMetadata(Request $request, string $serverID = 'client1'): Response
     {
         $serverName = $request->server->get('SERVER_NAME');
@@ -27,7 +30,7 @@ class WellKnownController extends AbstractController
             "scopes_supported" => ["email", "offline_access"],
             "response_types_supported" => ["code", "code token"],
             "service_documentation" => $this->generateOAuth2Url('oauth2_service_docs', $serverID),
-            "ui_locales_supported" => ["en-US", "en-GB", "en-CA"]
+            "ui_locales_supported" => ["en-US", "en-GB", "en-CA"],
         ]);
     }
 
