@@ -11,15 +11,15 @@ use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 #[Route('/{serverID}/oauth2', name: 'oauth2_')]
 class OAuth2Controller extends AbstractController
 {
-
     #[Route('/authorize', name: 'authorization_endpoint')]
-    public function getAuthCode(Request $request): Response {
+    public function getAuthCode(Request $request): Response
+    {
         $clientId = $request->get('client_id');
         $badClient = $clientId !== $this->getParameter('app.mock_oauth2_client_id');
         $redirectUri = $request->get('redirect_uri');
         $responseType = $request->get('response_type');
         $state = $request->get('state');
-        if ($responseType !== 'code' || empty($clientId) || empty('redirect_uri') || $badClient) {
+        if ($responseType !== 'code' || empty($clientId) || empty($redirectUri) || $badClient) {
             $return = ['error' => 'invalid_request'];
             if (!empty($state)) {
                 $return['state'] = $state;
@@ -28,7 +28,11 @@ class OAuth2Controller extends AbstractController
         }
 
         $state = urlencode($state);
-        $authcode = urlencode($this->getParameter('app.mock_oauth2_authcode'));
+        $authcode = $this->getParameter('app.mock_oauth2_authcode');
+        if (empty($authcode) || !is_string($authcode)) {
+            throw new \Exception('Server not configured');
+        }
+        $authcode = urlencode($authcode);
         $scopesRequested = explode(' ', rtrim(trim($request->get('scope'))));
         $confirmRedirectUri = "$redirectUri?code=$authcode&state=$state";
         $description = urlencode("The user has denied access to the scope requested by the client application");
@@ -49,7 +53,8 @@ class OAuth2Controller extends AbstractController
     }
 
     #[Route('/register', name: 'dynamic_client_registration')]
-    public function dynamicClientRegistration(Request $request): Response {
+    public function dynamicClientRegistration(Request $request): Response
+    {
         // 405 Method not allowed.
         if ($request->getMethod() !== 'POST') {
             return new Response(
@@ -80,19 +85,21 @@ class OAuth2Controller extends AbstractController
     }
 
     #[Route('/service_docs', name: 'service_docs')]
-    public function getServiceDocs(): Response {
+    public function getServiceDocs(): Response
+    {
         throw new BadRequestException('Not implemented yet.');
     }
 
     #[Route('/token', name: 'get_token')]
-    public function getToken(Request $request) :Response {
+    public function getToken(Request $request): Response
+    {
         $grantType = $request->get('grant_type');
         if ($grantType == 'refresh_token') {
             $refreshToken = $request->get('refresh_token');
             if (empty($refreshToken) || $refreshToken != $this->getParameter('app.mock_oauth2_refresh_token')) {
                 return $this->json(['error' => 'invalid_request']);
             }
-        } else if ($grantType == 'authorization_code') {
+        } elseif ($grantType == 'authorization_code') {
             $code = $request->get('code');
             $redirectUri = $request->get('redirect_uri'); // Not validated since the app isn't stateful.
             $clientId = $request->get('client_id');

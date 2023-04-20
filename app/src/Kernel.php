@@ -1,6 +1,7 @@
 <?php
 
 // src/Kernel.php
+
 namespace App;
 
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -12,6 +13,9 @@ class Kernel extends BaseKernel
 {
     use MicroKernelTrait;
 
+    /**
+     * @return array<\Symfony\Component\HttpKernel\Bundle\BundleInterface>
+     */
     public function registerBundles(): array
     {
         $bundles = [

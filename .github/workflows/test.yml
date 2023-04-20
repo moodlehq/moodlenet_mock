@@ -17,9 +17,10 @@ jobs:
 
       # https://github.com/shivammathur/setup-php (community)
       - name: Setup PHP, extensions and composer with shivammathur/setup-php
-        uses: shivammathur/setup-php@verbose
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
+          tools: php-cs-fixer, cs2pr, phpstan, parallel-lint
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, iconv, json, mbstring, pdo
 
       # Composer
@@ -35,6 +36,10 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
+      - name: Lint PHP Files
+        working-directory: ./app
+        run: parallel-lint . --exclude vendor --checkstyle | cs2pr
+
       - name: Install Composer dependencies
         working-directory: ./app
         run: composer install --no-progress --prefer-dist --optimize-autoloader
@@ -45,23 +50,14 @@ jobs:
       #   uses: symfonycorp/security-checker-action@v2
 
       # https://github.com/chekalsky/phpcs-action (community)
-      # - name: Check PSR12 code style (PHP_CodeSniffer)
-      #   working-directory: ./app
-      #   uses: chekalsky/phpcs-action@v1.2.0
-      #   with:
-      #     enable_warnings: true
-      #     installed_paths: '${{ github.workspace }}/vendor/squizlabs/php_codesniffer'
-      #     phpcs_bin_path: './vendor/bin/phpcs src --ignore="Migrations/"'
-
-      # https://github.com/phpmd/phpmd
-      # - name: Analyses PHP Code (PHP Mess Detector)
-      #   working-directory: ./app
-      #   run: vendor/bin/phpmd src,tests text .phpmd-ruleset.xml
+      - name: Check PSR12 code style (PHP_CodeSniffer)
+        working-directory: ./app
+        run: php-cs-fixer fix --dry-run --format=checkstyle src  | cs2pr
 
       # https://github.com/phpstan/phpstan
-      # - name: Analyse PHP Code (PHPStan)
-      #   working-directory: ./app
-      #   run: vendor/bin/phpstan analyse src
+      - name: Analyse PHP Code (PHPStan)
+        working-directory: ./app
+        run: phpstan analyse --level 8 src
 
       # Symfony
       - name: Check the Symfony console

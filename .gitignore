@@ -13,3 +13,4 @@
 certs/*
 !certs/readme.txt
 
+.php-cs-fixer.cache
