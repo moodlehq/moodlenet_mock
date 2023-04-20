@@ -20,5 +20,8 @@
         "allow-plugins": {
             "symfony/runtime": true
         }
+    },
+    "require-dev": {
+        "symfony/console": "^6.2"
     }
 }
