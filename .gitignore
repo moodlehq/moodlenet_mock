@@ -4,6 +4,7 @@
 /app/.env.local
 /app/.env.local.php
 /app/.env.*.local
+/app/.phpunit.result.cache
 /app/config/secrets/prod/prod.decrypt.private.php
 /app/public/bundles/
 /app/var/
