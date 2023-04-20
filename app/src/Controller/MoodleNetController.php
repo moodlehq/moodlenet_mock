@@ -22,7 +22,7 @@ class MoodleNetController extends AbstractController
         }
 
         //Note: PHP converts '.' to '_'. See https://www.php.net/manual/en/language.variables.external.php.
-        $resourceMetadata = json_decode($request->get('_'));
+        $resourceMetadata = json_decode($request->get('_') ?? '');
         if (is_null($resourceMetadata)) {
             return new Response("Missing JSON metadata", 400);
         }

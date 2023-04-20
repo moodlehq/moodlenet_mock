@@ -1,0 +1,77 @@
+name: Test application
+
+on: [push, pull_request]
+
+jobs:
+  Tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        php-versions: ['8.1', '8.2']
+
+    steps:
+      # https://github.com/actions/checkout (official)
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # https://github.com/shivammathur/setup-php (community)
+      - name: Setup PHP, extensions and composer with shivammathur/setup-php
+        uses: shivammathur/setup-php@verbose
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, iconv, json, mbstring, pdo
+
+      # Composer
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      # https://help.github.com/en/actions/configuring-and-managing-workflows/caching-dependencies-to-speed-up-workflows
+      - name: Cache composer dependencies
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        working-directory: ./app
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+      # https://github.com/sensiolabs/security-checker
+      # - name: Security check installed dependencies
+      #   working-directory: ./app
+      #   uses: symfonycorp/security-checker-action@v2
+
+      # https://github.com/chekalsky/phpcs-action (community)
+      # - name: Check PSR12 code style (PHP_CodeSniffer)
+      #   working-directory: ./app
+      #   uses: chekalsky/phpcs-action@v1.2.0
+      #   with:
+      #     enable_warnings: true
+      #     installed_paths: '${{ github.workspace }}/vendor/squizlabs/php_codesniffer'
+      #     phpcs_bin_path: './vendor/bin/phpcs src --ignore="Migrations/"'
+
+      # https://github.com/phpmd/phpmd
+      # - name: Analyses PHP Code (PHP Mess Detector)
+      #   working-directory: ./app
+      #   run: vendor/bin/phpmd src,tests text .phpmd-ruleset.xml
+
+      # https://github.com/phpstan/phpstan
+      # - name: Analyse PHP Code (PHPStan)
+      #   working-directory: ./app
+      #   run: vendor/bin/phpstan analyse src
+
+      # Symfony
+      - name: Check the Symfony console
+        working-directory: ./app
+        run: |
+          php bin/console -V
+          php bin/console about
+
+      # Tests
+      - name: Run unit and functional tests
+        working-directory: ./app
+        run: |
+          php vendor/bin/phpunit --stop-on-failure
