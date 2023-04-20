@@ -33,3 +33,26 @@ Certs must be generated outside the container and made accessible to the running
    ```
    docker run -p 443:443 -v "$(pwd)/certs":/opt/ssl/certs moodlenet-mock
    ```
+
+## Running the Symfony app locally (non-docker option)
+Running the app locally can be useful for things like debugging, since the container isn't currently set up for xdebug. This uses the build script only to generate the certs. Though the container is built too, it's not needed.
+1. Build with TLS enabled (this ensures we have the certs needed by symfony cli and only needs to be run once to ensure these exist):
+    ```
+    ./build.sh localhost moodlenet.test
+    ```
+2. Go to the app dir
+   ```
+   cd app
+   ```
+3. Check requirements
+   ```
+   symfony check:requirements
+   ```
+4. Install
+   ```
+   composer install
+   ```
+5. Run the app
+   ```
+   symfony server:start --port=8080 --p12=../certs/moodlenet.p12
+   ```
