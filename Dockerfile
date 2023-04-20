@@ -4,7 +4,7 @@ COPY docker/entrypoint.sh /entrypoint.sh
 COPY app /var/www
 
 RUN apt-get update \
-    && apt-get install -y apt-transport-https gnupg \
+    && apt-get install -y apt-transport-https gnupg unzip\
     && curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash \
     && apt-get install -y symfony-cli \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
