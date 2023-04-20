@@ -6,7 +6,6 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Mime\Part\DataPart;
 use Symfony\Component\Mime\Part\Multipart\FormDataPart;
 
-
 class MoodleNetTest extends WebTestCase
 {
     /**
@@ -29,7 +28,8 @@ class MoodleNetTest extends WebTestCase
         $this->assertResponseStatusCodeSame(400);
     }
 
-    public function createEndpointProvider(): array {
+    public function createEndpointProvider(): array
+    {
         return [
             ['/.pkg/@moodlenet/ed-resource/basic/v1/create'],
             ['/client1/.pkg/@moodlenet/ed-resource/basic/v1/create'],

@@ -12,7 +12,8 @@ use Symfony\Component\Routing\Annotation\Route;
 class MoodleNetController extends AbstractController
 {
     #[Route('/ed-resource/basic/v1/create', name: 'create_resource')]
-    public function createResource(Request $request) :Response {
+    public function createResource(Request $request): Response
+    {
         $serverName = $request->server->get('SERVER_NAME');
         $authHeader = $request->headers->get('authorization');
         $accessToken = $authHeader ? explode(' ', $authHeader)[1] : null;

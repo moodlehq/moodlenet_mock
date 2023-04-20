@@ -17,10 +17,10 @@ jobs:
 
       # https://github.com/shivammathur/setup-php (community)
       - name: Setup PHP, extensions and composer with shivammathur/setup-php
-        uses: shivammathur/setup-php@verbose
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          tools: cs2pr, phpcs
+          tools: php-cs-fixer, cs2pr
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, iconv, json, mbstring, pdo
 
       # Composer
@@ -48,7 +48,7 @@ jobs:
       # https://github.com/chekalsky/phpcs-action (community)
       - name: Check PSR12 code style (PHP_CodeSniffer)
         working-directory: ./app
-        run: phpcs -q --report=checkstyle src --ignore="Migrations/" | cs2pr
+        run: php-cs-fixer fix --dry-run --format=checkstyle src  | cs2pr
 
       # https://github.com/phpmd/phpmd
       # - name: Analyses PHP Code (PHP Mess Detector)
