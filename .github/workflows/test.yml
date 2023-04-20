@@ -20,7 +20,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          tools: php-cs-fixer, cs2pr
+          tools: php-cs-fixer, cs2pr, phpstan
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, iconv, json, mbstring, pdo
 
       # Composer
@@ -50,15 +50,10 @@ jobs:
         working-directory: ./app
         run: php-cs-fixer fix --dry-run --format=checkstyle src  | cs2pr
 
-      # https://github.com/phpmd/phpmd
-      # - name: Analyses PHP Code (PHP Mess Detector)
-      #   working-directory: ./app
-      #   run: vendor/bin/phpmd src,tests text .phpmd-ruleset.xml
-
       # https://github.com/phpstan/phpstan
-      # - name: Analyse PHP Code (PHPStan)
-      #   working-directory: ./app
-      #   run: vendor/bin/phpstan analyse src
+      - name: Analyse PHP Code (PHPStan)
+        working-directory: ./app
+        run: phpstan analyse --level 8 src
 
       # Symfony
       - name: Check the Symfony console

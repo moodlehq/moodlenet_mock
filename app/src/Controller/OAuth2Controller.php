@@ -19,7 +19,7 @@ class OAuth2Controller extends AbstractController
         $redirectUri = $request->get('redirect_uri');
         $responseType = $request->get('response_type');
         $state = $request->get('state');
-        if ($responseType !== 'code' || empty($clientId) || empty('redirect_uri') || $badClient) {
+        if ($responseType !== 'code' || empty($clientId) || empty($redirectUri) || $badClient) {
             $return = ['error' => 'invalid_request'];
             if (!empty($state)) {
                 $return['state'] = $state;
@@ -28,7 +28,11 @@ class OAuth2Controller extends AbstractController
         }
 
         $state = urlencode($state);
-        $authcode = urlencode($this->getParameter('app.mock_oauth2_authcode'));
+        $authcode = $this->getParameter('app.mock_oauth2_authcode');
+        if (empty($authcode) || !is_string($authcode)) {
+            throw new \Exception('Server not configured');
+        }
+        $authcode = urlencode($authcode);
         $scopesRequested = explode(' ', rtrim(trim($request->get('scope'))));
         $confirmRedirectUri = "$redirectUri?code=$authcode&state=$state";
         $description = urlencode("The user has denied access to the scope requested by the client application");

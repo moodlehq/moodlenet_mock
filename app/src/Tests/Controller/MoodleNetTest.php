@@ -24,10 +24,19 @@ class MoodleNetTest extends WebTestCase
     public function testRequestMissing(string $path): void
     {
         $client = static::createClient();
-        $client->request('POST', $path, [], [], ['HTTP_AUTHORIZATION' => 'Bearer ' . $client->getContainer()->getParameter('app.mock_oauth2_access_token')]);
+        $token = $client->getContainer()->getParameter('app.mock_oauth2_access_token');
+        if (empty($token) || !is_string($token)) {
+            $this->markTestSkipped('No mock OAuth2 access token configured');
+        }
+        $client->request('POST', $path, [], [], [
+            'HTTP_AUTHORIZATION' => "Bearer {$token}",
+        ]);
         $this->assertResponseStatusCodeSame(400);
     }
 
+    /**
+     * @return array<array<string>>
+     */
     public function createEndpointProvider(): array
     {
         return [

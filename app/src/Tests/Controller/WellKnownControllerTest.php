@@ -16,6 +16,7 @@ class WellKnownControllerTest extends WebTestCase
 
         $this->assertResponseIsSuccessful();
         $response = $client->getResponse();
+        $this->assertIsString($response->getContent());
         $this->assertJson($response->getContent());
         $responseData = json_decode($response->getContent(), true);
 
@@ -40,6 +41,9 @@ class WellKnownControllerTest extends WebTestCase
         $this->assertArrayHasKey('service_documentation', $responseData);
     }
 
+    /**
+     * @return array<array<string>>
+     */
     public function OAuthAuthorizationServerProvider(): array
     {
         return [
