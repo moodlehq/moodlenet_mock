@@ -35,13 +35,19 @@ class MoodleNetController extends AbstractController
         }
         /** @var UploadedFile $uploadedFile */
         $fileName = $uploadedFile->getClientOriginalName();
+        // Save the file to the uploads directory.
+        $uploadDir = $this->getParameter('moodlenetfiles_directory');
+        $uploadedFile->move(
+            $uploadDir,/** @phpstan-ignore-line */
+            $fileName
+        );
 
         return $this->json([
             '_key' => '1bf55cd85a',
             'name' => $resourceMetadata->name,
             'description' => $resourceMetadata->description,
-            'url' => "https://$serverName/files/$fileName",
-            'homepage' => "https://$serverName/files/home/$fileName",
+            'url' => "https://$serverName/uploads/moodlenet/$fileName",
+            'homepage' => "https://$serverName/uploads/moodlenet/$fileName",
         ], 201);
     }
 }

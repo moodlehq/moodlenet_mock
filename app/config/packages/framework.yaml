@@ -2,3 +2,6 @@ framework:
   secret: '%env(APP_SECRET)%'
   http_method_override: true
   test: true
+
+parameters:
+  moodlenetfiles_directory: '%kernel.project_dir%/public/uploads/moodlenet'
